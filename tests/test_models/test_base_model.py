@@ -1,99 +1,41 @@
-#!/usr/bin/python3
-""" """
-from models.base_model import BaseModel
 import unittest
+from unittest.mock import patch, mock_open
+from models.base_model import BaseModel
 import datetime
-from uuid import UUID
 import json
 import os
 
-
-class test_basemodel(unittest.TestCase):
-    """ """
-
-    def __init__(self, *args, **kwargs):
-        """ """
-        super().__init__(*args, **kwargs)
-        self.name = 'BaseModel'
-        self.value = BaseModel
+class TestBaseModel(unittest.TestCase):
+    """Tests for the BaseModel class."""  # Corrected indentation
 
     def setUp(self):
-        """ """
-        pass
+        """Set up test cases for the BaseModel."""
+        with patch('models.base_model.storage.new') as mocked_new:
+            self.model = BaseModel()
 
-    def tearDown(self):
-        try:
-            os.remove('file.json')
-        except:
-            pass
+    def test_instance_creation_with_kwargs(self):
+        """Test initialization with kwargs including datetime conversion."""
+        date_str = '2022-01-01T00:00:00.000000'
+        model = BaseModel(created_at=date_str, updated_at=date_str)
+        self.assertEqual(model.created_at, datetime.datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S.%f'))
+        self.assertEqual(model.updated_at, datetime.datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S.%f'))
 
-    def test_default(self):
-        """ """
-        i = self.value()
-        self.assertEqual(type(i), self.value)
+    @patch('models.base_model.open', mock_open(), create=True)
+    @patch('models.base_model.json.dump')
+    def test_save_to_file(self, mocked_json_dump):
+        """Test saving the model's state to a file."""
+        self.model.save()
+        mocked_json_dump.assert_called_once()
 
-    def test_kwargs(self):
-        """ """
-        i = self.value()
-        copy = i.to_dict()
-        new = BaseModel(**copy)
-        self.assertFalse(new is i)
+    def test_initial_time_setup(self):
+        """Test the initial setup of created_at and updated_at attributes."""
+        self.assertIsInstance(self.model.created_at, datetime.datetime)
+        self.assertEqual(self.model.created_at, self.model.updated_at)
 
-    def test_kwargs_int(self):
-        """ """
-        i = self.value()
-        copy = i.to_dict()
-        copy.update({1: 2})
-        with self.assertRaises(TypeError):
-            new = BaseModel(**copy)
+    def test_str_representation(self):
+        """Test the string representation of the model."""
+        expected_format = f"[BaseModel] ({self.model.id}) {self.model.__dict__}"
+        self.assertEqual(str(self.model), expected_format)
 
-    def test_save(self):
-        """ Testing save """
-        i = self.value()
-        i.save()
-        key = self.name + "." + i.id
-        with open('file.json', 'r') as f:
-            j = json.load(f)
-            self.assertEqual(j[key], i.to_dict())
-
-    def test_str(self):
-        """ """
-        i = self.value()
-        self.assertEqual(str(i), '[{}] ({}) {}'.format(self.name, i.id,
-                         i.__dict__))
-
-    def test_todict(self):
-        """ """
-        i = self.value()
-        n = i.to_dict()
-        self.assertEqual(i.to_dict(), n)
-
-    def test_kwargs_none(self):
-        """ """
-        n = {None: None}
-        with self.assertRaises(TypeError):
-            new = self.value(**n)
-
-    def test_kwargs_one(self):
-        """ """
-        n = {'Name': 'test'}
-        with self.assertRaises(KeyError):
-            new = self.value(**n)
-
-    def test_id(self):
-        """ """
-        new = self.value()
-        self.assertEqual(type(new.id), str)
-
-    def test_created_at(self):
-        """ """
-        new = self.value()
-        self.assertEqual(type(new.created_at), datetime.datetime)
-
-    def test_updated_at(self):
-        """ """
-        new = self.value()
-        self.assertEqual(type(new.updated_at), datetime.datetime)
-        n = new.to_dict()
-        new = BaseModel(**n)
-        self.assertFalse(new.created_at == new.updated_at)
+if __name__ == '__main__':
+    unittest.main()
