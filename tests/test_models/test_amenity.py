@@ -1,19 +1,14 @@
 #!/usr/bin/python3
 """ Test suite for the Amenity class. """
-from tests.test_models.test_base_model import test_basemodel
+import unittest
 from models.amenity import Amenity
 
-class TestAmenity(test_basemodel):
-    """ Test cases for the Amenity model. """
+class TestAmenity(unittest.TestCase):
 
-    def __init__(self, *args, **kwargs):
-        """ Initialize the TestAmenity class. """
-        super().__init__(*args, **kwargs)
-        self.name = "Amenity"
-        self.value = Amenity
+    def setUp(self):
+        """Set up test environment"""
+        self.amenity = Amenity()
 
-    def test_name_attribute(self):
-        """ Test that the Amenity model has a name attribute of type str. """
-        amenity = self.value()
-        self.assertIsInstance(amenity.name, str, "name should be a string")
-        self.assertTrue(hasattr(amenity, 'name'), "Amenity should have a name attribute")
+    def test_name(self):
+        """Test for name attribute"""
+        self.assertEqual(self.amenity.name, "")

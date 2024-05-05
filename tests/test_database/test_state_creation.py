@@ -3,7 +3,6 @@ import os
 from unittest import skipIf
 import MySQLdb
 
-
 class TestStateCreation(unittest.TestCase):
     """
     Test the functionality of state creation within a database.
@@ -20,11 +19,21 @@ class TestStateCreation(unittest.TestCase):
             passwd=os.getenv('HBNB_MYSQL_PWD'),
             db=os.getenv('HBNB_MYSQL_DB')
         )
+        cls.db.autocommit(False)  # Manage transactions manually
         cls.cursor = cls.db.cursor()
+
+    def setUp(self):
+        """Start a new transaction before each test."""
+        self.db.begin()
+
+    def tearDown(self):
+        """Rollback the transaction after each test."""
+        self.db.rollback()
 
     @classmethod
     def tearDownClass(cls):
         """Close database connection after all tests have run."""
+        cls.cursor.close()
         cls.db.close()
 
     @skipIf(os.getenv('HBNB_TYPE_STORAGE') != 'db', "skip if not using database storage")
@@ -42,13 +51,12 @@ class TestStateCreation(unittest.TestCase):
         new_count = self.cursor.fetchone()[0]
 
         # Check if the state count has increased by 1
-        self.assertEqual(new_count, initial_count + 1, "Failed to add a new state")
-        
+        self.assertEqual(new_count, initial_count + 1, f"Failed to add a new state. Expected {initial_count + 1}, got {new_count}")
+
     def create_state(self, name):
         """Mock or actual method to simulate state creation in the db."""
         self.cursor.execute("INSERT INTO states (name) VALUES (%s)", (name,))
         self.db.commit()
-
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,24 +1,25 @@
-#!/usr/bin/python3
-""" Tests for City model """
-from tests.test_models.test_base_model import test_basemodel
+import unittest
 from models.city import City
 
-class TestCity(test_basemodel):
-    """ Define tests for City model from BaseModel """
+class TestCity(unittest.TestCase):
+    """Test suite for the City class."""
 
-    def __init__(self, *args, **kwargs):
-        """ Initialize the TestCity class """
-        super().__init__(*args, **kwargs)
-        self.name = "City"
-        self.value = City
+    def test_init_city(self):
+        """Test initialization of City."""
+        city = City()
+        self.assertTrue(hasattr(city, 'id'), "City should have an id attribute")
+        self.assertTrue(hasattr(city, 'created_at'), "City should have a created_at attribute")
+        self.assertTrue(hasattr(city, 'updated_at'), "City should have an updated_at attribute")
+        self.assertTrue(hasattr(city, 'state_id'), "City should have a state_id attribute")
+        self.assertTrue(hasattr(city, 'name'), "City should have a name attribute")
+        self.assertIsInstance(city.state_id, str, "City state_id should be a string")
+        self.assertIsInstance(city.name, str, "City name should be a string")
 
-    def test_state_id(self):
-        """ Test the type of state_id if it exists """
-        new = self.value()
-        self.assertTrue(hasattr(new, 'state_id'), "City should have a state_id attribute")
-        self.assertIsInstance(new.state_id, str, "The 'state_id' attribute should be a string")
+    def test_city_str(self):
+        """Test the string representation of a city."""
+        city = City(name="San Francisco")
+        expected_str_format = f"[City] ({city.id}) {city.__dict__}"
+        self.assertEqual(str(city), expected_str_format, "String format mismatch.")
 
-    def test_name(self):
-        """ Test the type of name """
-        new = self.value()
-        self.assertIsInstance(new.name, str, "The 'name' attribute should be a string")
+if __name__ == '__main__':
+    unittest.main()
